@@ -80,14 +80,14 @@ _kyber_disable=y
 pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
-pkgver=4.13.4.r0.g6eb9c0fc1bca
+pkgver=4.13.5.r0.g06b0d88bfe61
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
 license=('GPL2')
 options=('!strip')
 makedepends=('kmod' 'inetutils' 'bc' 'libelf' 'git')
-_bfq_sq_mq_ver='20170921'
+_bfq_sq_mq_ver='20171007'
 _bfq_sq_mq_patch="4.13-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
 _lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.13"
 _gcc_path="https://raw.githubusercontent.com/sirlucjan/kernel_gcc_patch/master"
@@ -143,8 +143,8 @@ prepare() {
     ### Patch source with BFQ-SQ-MQ
         msg "Fix naming schema in BFQ-SQ-MQ patch"
         sed -i -e "s|PATCHLEVEL = 14|PATCHLEVEL = 13|g" \
-            -i -e "s|SUBLEVEL = 0|SUBLEVEL = 4|g" \
-            -i -e "s|EXTRAVERSION = -rc1|EXTRAVERSION =|g" \
+            -i -e "s|SUBLEVEL = 0|SUBLEVEL = 5|g" \
+            -i -e "s|EXTRAVERSION = -rc3|EXTRAVERSION =|g" \
             -i -e "s|EXTRAVERSION =-bfq|EXTRAVERSION =|g" \
             -i -e "s|EXTRAVERSION =-mq|EXTRAVERSION =|g" ../${_bfq_sq_mq_patch}
         msg "Patching source with BFQ-SQ-MQ patches"
@@ -232,7 +232,7 @@ prepare() {
         
     ### Optionally set tickrate to 100 
 	if [ -n "$_100_HZ_ticks" ]; then
-		msg "Setting tick rate to 1k..."
+		msg "Setting tick rate to 100 HZ..."
 		sed -i -e 's/^CONFIG_HZ_300=y/# CONFIG_HZ_300 is not set/' \
 			-i -e 's/^# CONFIG_HZ_100 is not set/CONFIG_HZ_100=y/' \
 			-i -e 's/^CONFIG_HZ=300/CONFIG_HZ=100/' .config
@@ -493,7 +493,7 @@ for _p in ${pkgname[@]}; do
   }"
 done
 sha512sums=('SKIP'
-            'f4f5c63fc1acc86ece0c9fad87b757183481b6340c810cfd686ca943bba3ef9a3af6a97071b7fb066da4ce1fdf15f74caeac1fe89d359ffc97f3f16edaff9051'
+            '95e967693ff72af943f331b2c79eca8067c95bd2d267ae2655e8f13881f3ea9ad64209668c5d80ccc29583ace485577ed9f15455adc0b97c3b58ddf494677a6f'
             '5eac105afaa3360671920631bb63469778120fd61fe57d761fcfae011986e246a476a9eea6788ad9a62a4d679da6832a18e89b871e45c673d13c2e9935b56322'
             '1fe1a75d1724dfccd7af40c91648a28758c59259fd7531a07aafc4b56fe8e18a8b64349364de2c690245568023e0c1ed8226c1b5e364ff91a2bcb16868550a9f'
             'c2073154ae08b5186198428b0cff5000ae53567f93b85c7ea1c7f10ceeac7ed78021d16924102740cafe02920d0dea60af3bd0c61b877b43f10a416e239b9c04'
@@ -515,7 +515,7 @@ sha512sums=('SKIP'
             'c1f1584feabd894551d8ca083f233b1c3d850ae295b2034360635986bc7850a654f8dc2af16e342b98c10c8927d5d3fd99d5d0f48cccc1f363dd377f0dd6f85b'
             'a1ccc22354a420467fb912f822585ed4573e68f4694f02ab83d7c8e352da88be495acb3cb4c451c27ca0cf0befe5925b8734d37205bb3dfdaf86d2dedef0798f'
             '5ca7ae20245a54caa71fb570d971d6872d4e888f35c6123b93fbca16baf9a0e2500d6ec931f3906e4faecaaca9cad0d593694d9cab617efd0cb7b5fc09c0fa48'
-            '81746a9aa832f375743146092ea8a7195ff02ba5e25d08ebad5b7459dd5c7db13bf302b2f9e46cf5d0c3ded979836b74a8e4e8f0e8e06b3ff7a4aec3e8f327e4'
+            '1b0b409c0c3fcad429a8a03e8e0c942283f07e0bfd88c7cf018a65624e6f24edb05c234be41a4a0662b14b7ddd0de5c49729504faff5f20a170dc6995bb67a9a'
             'd6faa67f3ef40052152254ae43fee031365d0b1524aa0718b659eb75afc21a3f79ea8d62d66ea311a800109bed545bc8f79e8752319cd378eef2cbd3a09aba22'
             '2dc6b0ba8f7dbf19d2446c5c5f1823587de89f4e28e9595937dd51a87755099656f2acec50e3e2546ea633ad1bfd1c722e0c2b91eef1d609103d8abdc0a7cbaf'
             '632c37449c088141dbed4e745c252849396a305a03a86349080a58fb14d7fcd3488f306b890a082a334dab878e179889dfaae0423dfe3d125f48804847abbb39'
