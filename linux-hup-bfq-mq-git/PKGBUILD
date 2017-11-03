@@ -80,14 +80,14 @@ _kyber_disable=y
 pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
-pkgver=4.13.9.r0.g5b61412afb66
+pkgver=4.13.11.r0.g3996e9c638b8
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
 license=('GPL2')
 options=('!strip')
 makedepends=('kmod' 'inetutils' 'bc' 'libelf' 'git')
-_bfq_sq_mq_ver='20171009'
+_bfq_sq_mq_ver='20171030'
 _bfq_sq_mq_patch="4.13-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
 _lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.13"
 _gcc_path="https://raw.githubusercontent.com/sirlucjan/kernel_gcc_patch/master"
@@ -119,7 +119,7 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
 	### UKSM ###
         "http://kerneldedup.org/download/uksm/0.1.2.6/uksm-0.1.2.6-for-v4.13.patch"
 	### VRQ ###
-        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.13_pds098b.patch"
+        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.13_pds098d.patch"
 	)
 
 _kernelname=${pkgbase#linux}
@@ -136,8 +136,8 @@ prepare() {
     ### Patch source with BFQ-SQ-MQ
         msg "Fix naming schema in BFQ-SQ-MQ patch"
         sed -i -e "s|PATCHLEVEL = 14|PATCHLEVEL = 13|g" \
-            -i -e "s|SUBLEVEL = 0|SUBLEVEL = 9|g" \
-            -i -e "s|EXTRAVERSION = -rc3|EXTRAVERSION =|g" \
+            -i -e "s|SUBLEVEL = 0|SUBLEVEL = 11|g" \
+            -i -e "s|EXTRAVERSION = -rc7|EXTRAVERSION =|g" \
             -i -e "s|EXTRAVERSION =-bfq|EXTRAVERSION =|g" \
             -i -e "s|EXTRAVERSION =-mq|EXTRAVERSION =|g" ../${_bfq_sq_mq_patch}
         msg "Patching source with BFQ-SQ-MQ patches"
@@ -177,7 +177,7 @@ prepare() {
     ### UKSM ###
 	patch -Np1 -i "${srcdir}/uksm-0.1.2.6-for-v4.13.patch"
     ### PSD ###
-	patch -Np1 -i "${srcdir}/v4.13_pds098b.patch"       
+	patch -Np1 -i "${srcdir}/v4.13_pds098d.patch"       
 
     ### Patch source to enable more gcc CPU optimizatons via the make nconfig
         msg "Patching source with gcc patch to enable more cpus types"
@@ -486,7 +486,7 @@ for _p in ${pkgname[@]}; do
   }"
 done
 sha512sums=('SKIP'
-            'bc9b8699447c9c88bc93f9d2672663e50fa6773ec44f44a6afc93439f4c414a1cd2a35d94fe5205b8a066f1531b40b072d439152ec7d39d1282515c282f4bb63'
+            '89fd03de4e0e250d70d20524f7d94a6605b1c8a2898170249986c9a926063d832240defdb8af11226799c4e0344c681ebab0ecef63f75e4fc41557d69eaec3fd'
             '11dd363137d680d1bde1e332c3829246773e49d5fd0d2ef4ab77723ca0d2ecb3ad80a77a08dca8c4ce817ff0f966709673453e754f15e3e1527f943725d547ff'
             'ca6a40800668c0fcf478bd1bc555e5a496f5259739594bf83cc4963756b7a9a0a5b406e91f760d35f1bce1268c01d779fe2a7e749eccf9412e826152a5f013ef'
             '1434cc3957ef77fb83c9385a348f36ca43a73459b8995d3061143d1d15b307f944c39abc0eb109d20869c1749348d608c58cf5b92fd81ad65cad2d362e346549'
@@ -501,8 +501,8 @@ sha512sums=('SKIP'
             'c1f1584feabd894551d8ca083f233b1c3d850ae295b2034360635986bc7850a654f8dc2af16e342b98c10c8927d5d3fd99d5d0f48cccc1f363dd377f0dd6f85b'
             'a1ccc22354a420467fb912f822585ed4573e68f4694f02ab83d7c8e352da88be495acb3cb4c451c27ca0cf0befe5925b8734d37205bb3dfdaf86d2dedef0798f'
             '5ca7ae20245a54caa71fb570d971d6872d4e888f35c6123b93fbca16baf9a0e2500d6ec931f3906e4faecaaca9cad0d593694d9cab617efd0cb7b5fc09c0fa48'
-            '323c48f297b82ef387b154f8ef621b34cee1587f489e5815775108a7cd99ca031a443c4316e6e34954ffbfda87d63122f94d252a4b962d6e5f46641adabd5fd7'
+            '97032e909b098efb139dddd505872d93ba62be43833409e2605c0af9da95aef52bd31de4f3f151118e124b2f9cb34d111e9746af052c9583d6bb0a3318cc010f'
             'd6faa67f3ef40052152254ae43fee031365d0b1524aa0718b659eb75afc21a3f79ea8d62d66ea311a800109bed545bc8f79e8752319cd378eef2cbd3a09aba22'
             '2dc6b0ba8f7dbf19d2446c5c5f1823587de89f4e28e9595937dd51a87755099656f2acec50e3e2546ea633ad1bfd1c722e0c2b91eef1d609103d8abdc0a7cbaf'
             '632c37449c088141dbed4e745c252849396a305a03a86349080a58fb14d7fcd3488f306b890a082a334dab878e179889dfaae0423dfe3d125f48804847abbb39'
-            'f701fe960f9b6a25dbf004addd84505f16ef95624b007eec5ab0adb8c513b72775eb858d1065b69059ca64db2f105dbdb4b7c84833fef59b9bf71db0561d40e8')
+            '8a69bc117a9c8dbac29f553a960816b6881dddef1c990f249bcb863cc7dc7b57dfab5adc043c0f28fc8fc49e10ee2f3f18e46a1576bd2fff10b90cbcbeac1c99')
