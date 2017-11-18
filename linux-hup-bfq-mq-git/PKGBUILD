@@ -80,20 +80,20 @@ _kyber_disable=y
 pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
-pkgver=4.13.11.r0.g3996e9c638b8
+pkgver=4.14.0.gbebc6082da0a
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
 license=('GPL2')
 options=('!strip')
 makedepends=('kmod' 'inetutils' 'bc' 'libelf' 'git')
-_bfq_sq_mq_ver='20171030'
-_bfq_sq_mq_patch="4.13-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
-_lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.13"
+_bfq_sq_mq_ver='20171114'
+_bfq_sq_mq_patch="4.14-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
+_lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.14"
 _gcc_path="https://raw.githubusercontent.com/sirlucjan/kernel_gcc_patch/master"
 _gcc_patch="enable_additional_cpu_optimizations_for_gcc_v4.9+_kernel_v4.13+.patch"
 
-source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#branch=linux-4.13.y'
+source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#branch=linux-4.14.y'
         "${_lucjanpath}/${_bfq_sq_mq_patch}"
         "${_lucjanpath}/blk-mq-v10/0050-blk-mq-sched-dispatch-from-scheduler-only-after-progress-is-made-on->dispatch.patch"
         "${_lucjanpath}/blk-mq-v10/0051-blk-mq-sched-move-actual-dispatching-into-one-helper.patch"
@@ -104,9 +104,6 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         "${_lucjanpath}/blk-mq-v10/0056-blk-mq-SCSI-allow-to-pass-null-rq-to-scsi_prep_state_check().patch"
         "${_lucjanpath}/blk-mq-v10/0057-blk-mq-SCSI-implement-get-budget-and-put_budget-for-blk-mq.patch"
         "${_lucjanpath}/0100-Check-presence-on-tree-of-every-entity-after-every-a.patch"
-        "${_lucjanpath}/0200-BFQ-MQ-bugfix-from-pfkernel-2.patch"
-        "${_lucjanpath}/0200-BFQ-MQ-bugfix-from-pfkernel-3.patch"
-        "${_lucjanpath}/0200-BFQ-MQ-bugfix-from-pfkernel-4.patch"
         "${_lucjanpath}/0300-Disable-writeback-throttling.patch"
         "${_gcc_path}/${_gcc_patch}"
          # the main kernel config files
@@ -117,9 +114,9 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         'linux.preset'
 
 	### UKSM ###
-        "http://kerneldedup.org/download/uksm/0.1.2.6/uksm-0.1.2.6-for-v4.13.patch"
+        "https://raw.githubusercontent.com/dolohow/uksm/master/uksm-4.14.patch"
 	### VRQ ###
-        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.13_pds098d.patch"
+        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.14_pds098f.patch"
 	)
 
 _kernelname=${pkgbase#linux}
@@ -127,19 +124,13 @@ _kernelname=${pkgbase#linux}
 pkgver() {
   cd "${_srcname}"
 
-  git describe --long | sed -E 's/^v//;s/([^-]*-g)/r\1/;s/-/./g;s/\.rc/rc/'
+  git describe --long --tags | sed 's/^v//;s/-/./g'
 } 
 
 prepare() {
     cd "${_srcname}"
    
     ### Patch source with BFQ-SQ-MQ
-        msg "Fix naming schema in BFQ-SQ-MQ patch"
-        sed -i -e "s|PATCHLEVEL = 14|PATCHLEVEL = 13|g" \
-            -i -e "s|SUBLEVEL = 0|SUBLEVEL = 11|g" \
-            -i -e "s|EXTRAVERSION = -rc7|EXTRAVERSION =|g" \
-            -i -e "s|EXTRAVERSION =-bfq|EXTRAVERSION =|g" \
-            -i -e "s|EXTRAVERSION =-mq|EXTRAVERSION =|g" ../${_bfq_sq_mq_patch}
         msg "Patching source with BFQ-SQ-MQ patches"
         patch -Np1 -i ../${_bfq_sq_mq_patch}
         
@@ -148,14 +139,6 @@ prepare() {
         msg "Apply tentative patches"
         for p in "${srcdir}"/0100*.patch*; do 
         msg " $p"
-        patch -Np1 -i "$p"; done
-        fi
-        
-    ### Patches from https://github.com/pfactum/pf-kernel/
-        if [ -n "$_use_pfkernel_patches" ]; then
-        msg "Apply pfkernel patches"
-        for p in "${srcdir}"/0200*.patch*; do 
-        msg " $p" 
         patch -Np1 -i "$p"; done
         fi
         
@@ -175,9 +158,9 @@ prepare() {
         patch -Np1 -i "$p"; done
         fi    
     ### UKSM ###
-	patch -Np1 -i "${srcdir}/uksm-0.1.2.6-for-v4.13.patch"
+	patch -Np1 -i "${srcdir}/uksm-4.14.patch"
     ### PSD ###
-	patch -Np1 -i "${srcdir}/v4.13_pds098d.patch"       
+	patch -Np1 -i "${srcdir}/v4.14_pds098f.patch"       
 
     ### Patch source to enable more gcc CPU optimizatons via the make nconfig
         msg "Patching source with gcc patch to enable more cpus types"
@@ -486,7 +469,7 @@ for _p in ${pkgname[@]}; do
   }"
 done
 sha512sums=('SKIP'
-            '89fd03de4e0e250d70d20524f7d94a6605b1c8a2898170249986c9a926063d832240defdb8af11226799c4e0344c681ebab0ecef63f75e4fc41557d69eaec3fd'
+            '264efe19f7cfc27bc2fd2c59b361821ac89e5505e1a55ab23e8a1f93e7095c509cfb8cf6eb2079b8113b7bc3283b2bec5d6d3776a8afd2b258f3688edb1f0615'
             '11dd363137d680d1bde1e332c3829246773e49d5fd0d2ef4ab77723ca0d2ecb3ad80a77a08dca8c4ce817ff0f966709673453e754f15e3e1527f943725d547ff'
             'ca6a40800668c0fcf478bd1bc555e5a496f5259739594bf83cc4963756b7a9a0a5b406e91f760d35f1bce1268c01d779fe2a7e749eccf9412e826152a5f013ef'
             '1434cc3957ef77fb83c9385a348f36ca43a73459b8995d3061143d1d15b307f944c39abc0eb109d20869c1749348d608c58cf5b92fd81ad65cad2d362e346549'
@@ -496,13 +479,10 @@ sha512sums=('SKIP'
             '82e624f91c6609bec6ebbc284c8413e638802d3306d6e3826524631fd3a4fdaaed9a85a366e9d3deab2d1b1638f2225a64942e754145ea30da896fc3155574eb'
             '75403516c0e64e13c66602ade9ac12fd553ec811628b4bba79686e183e12a798281566dfdbbe0ba1217ebe8ee1d294a7ca904c36d7b760bcb558ddca0cb7f260'
             '0f96fa9ad784709973b32eea82075ceb3e9dc2482df6441a4607612806f069254e63508b1b562279622394e4a1fbebef1b87af8401c0b1210d5d0de9954245c8'
-            '862918504ae7f05af830582492f387918d6be0be4036fa0b65765c97cbacfe637edf44a3e510fd042e077a226e447169cc28129f59c7175eacd82019eab45aa4'
-            'e607eb2a937f6055ff1216377091f6e23858f94fbfe532089849f1558d8539700220500262f501bb9a4d4d61cfe32372aa2a4745a5cb630a49b23482eab36d4c'
-            'c1f1584feabd894551d8ca083f233b1c3d850ae295b2034360635986bc7850a654f8dc2af16e342b98c10c8927d5d3fd99d5d0f48cccc1f363dd377f0dd6f85b'
             'a1ccc22354a420467fb912f822585ed4573e68f4694f02ab83d7c8e352da88be495acb3cb4c451c27ca0cf0befe5925b8734d37205bb3dfdaf86d2dedef0798f'
             '5ca7ae20245a54caa71fb570d971d6872d4e888f35c6123b93fbca16baf9a0e2500d6ec931f3906e4faecaaca9cad0d593694d9cab617efd0cb7b5fc09c0fa48'
-            '97032e909b098efb139dddd505872d93ba62be43833409e2605c0af9da95aef52bd31de4f3f151118e124b2f9cb34d111e9746af052c9583d6bb0a3318cc010f'
+            '2e64667d3782e84d44f386c8b30163c9768446985eac94018961d92c5ae3fec21c9e0cffc91ac5a5a9a542ace4b68c025472b11fe141a366a90fc9f7ca97c93f'
             'd6faa67f3ef40052152254ae43fee031365d0b1524aa0718b659eb75afc21a3f79ea8d62d66ea311a800109bed545bc8f79e8752319cd378eef2cbd3a09aba22'
             '2dc6b0ba8f7dbf19d2446c5c5f1823587de89f4e28e9595937dd51a87755099656f2acec50e3e2546ea633ad1bfd1c722e0c2b91eef1d609103d8abdc0a7cbaf'
-            '632c37449c088141dbed4e745c252849396a305a03a86349080a58fb14d7fcd3488f306b890a082a334dab878e179889dfaae0423dfe3d125f48804847abbb39'
-            '8a69bc117a9c8dbac29f553a960816b6881dddef1c990f249bcb863cc7dc7b57dfab5adc043c0f28fc8fc49e10ee2f3f18e46a1576bd2fff10b90cbcbeac1c99')
+            '44b31276d4d712e4e1e1455e128daa079ddd9d72a4620289607faf6134a225737004e8742de79e0283e98ef2d4f746f075e041870d37eab191c93c566f945c7f'
+            '03b315f6e82e186c634c06cc90c152d1388fab22d3404247f08d3f5d2db32a405c59d4fa37f8b3c07afaf9595cd52569b6bd4815fedcf372a5de4e1a1e258818')
