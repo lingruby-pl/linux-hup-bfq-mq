@@ -10,10 +10,7 @@
 ### Thx to Tom 'monotykamary' Nguyen
 _use_tentative_patches=y
 
-### Use patches from https://github.com/pfactum/pf-kernel/
-_use_pfkernel_patches=y
-
-### Use patches from https://marc.info/?l=linux-block&m=150436546704854&w=2
+### Use patches from https://marc.info/?l=linux-block&m=150797307912556&w=1
 _use_blk_mq_patches=y
 
 ### Use disable writeback throttling: https://marc.info/?l=linux-block&m=150486424501778&w=2
@@ -57,7 +54,7 @@ _NUMAdisable=y
 # This PKGBUILD will call it directly to probe all the modules you have logged!
 #
 # More at this wiki page ---> https://wiki.archlinux.org/index.php/Modprobed_db
-_localmodcfg=
+_localmodcfg=y
 
 # Use the current kernel's .config file
 # Enabling this option will use the .config of the RUNNING kernel rather than
@@ -81,7 +78,7 @@ pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
 pkgver=4.14.2.0.gf9f0b03dedc1
-pkgrel=1
+pkgrel=2
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
 license=('GPL2')
@@ -89,6 +86,7 @@ options=('!strip')
 makedepends=('kmod' 'inetutils' 'bc' 'libelf' 'git')
 _bfq_sq_mq_ver='20171114'
 _bfq_sq_mq_patch="4.14-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
+#_lucjanpath="https://raw.githubusercontent.com/sirlucjan/kernel-patches/master/4.14"
 _lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.14"
 _gcc_path="https://raw.githubusercontent.com/sirlucjan/kernel_gcc_patch/master"
 _gcc_patch="enable_additional_cpu_optimizations_for_gcc_v4.9+_kernel_v4.13+.patch"
@@ -106,7 +104,6 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         "${_lucjanpath}/0100-Check-presence-on-tree-of-every-entity-after-every-a.patch"
         "${_lucjanpath}/0300-Disable-writeback-throttling.patch"
         "${_gcc_path}/${_gcc_patch}"
-         # the main kernel config files
          # the main kernel config files
         'config'
          # pacman hook for depmod
@@ -138,7 +135,7 @@ prepare() {
     ### Fix https://bugs.archlinux.org/task/56207
         msg "Fix bug #56207"
         patch -Np1 -i ../0001-platform-x86-hp-wmi-Fix-tablet-mode-detection-for-co.patch
-       
+    
     ### Patch source with BFQ-SQ-MQ
         msg "Fix naming schema in BFQ-SQ-MQ patch"
         sed -i -e "s|SUBLEVEL = 0|SUBLEVEL = 2|g" \
@@ -156,7 +153,7 @@ prepare() {
         patch -Np1 -i "$p"; done
         fi
         
-    ### Patches from https://marc.info/?l=linux-block&m=150436546704854&w=2
+    ### Use patches from https://marc.info/?l=linux-block&m=150797307912556&w=1
         if [ -n "$_use_blk_mq_patches" ]; then
         msg "Apply blk-mq patches"
         for p in "${srcdir}"/*-blk-mq*.patch*; do 
@@ -171,14 +168,14 @@ prepare() {
         msg " $p" 
         patch -Np1 -i "$p"; done
         fi    
+        
+    ### Patch source to enable more gcc CPU optimizatons via the make nconfig
+        msg "Patching source with gcc patch to enable more cpus types"
+	patch -Np1 -i ../${_gcc_patch}
     ### UKSM ###
 	patch -Np1 -i "${srcdir}/uksm-4.14.patch"
     ### PSD ###
 	patch -Np1 -i "${srcdir}/v4.14_pds098g.patch"       
-
-    ### Patch source to enable more gcc CPU optimizatons via the make nconfig
-        msg "Patching source with gcc patch to enable more cpus types"
-	patch -Np1 -i ../${_gcc_patch}
 
     ### Clean tree and copy ARCH config over
 	msg "Running make mrproper to clean source tree"
@@ -247,29 +244,27 @@ prepare() {
 		msg "Disabling Kyber I/O scheduler..."
 		sed -i -e s'/^CONFIG_MQ_IOSCHED_KYBER=y/# CONFIG_MQ_IOSCHED_KYBER is not set/' ./.config
 	fi
-
+   
 	if [ "${_kernelname}" != "" ]; then
 		sed -i "s|CONFIG_LOCALVERSION=.*|CONFIG_LOCALVERSION=\"${_kernelname}\"|g" ./.config
 		sed -i "s|CONFIG_LOCALVERSION_AUTO=.*|CONFIG_LOCALVERSION_AUTO=n|" ./.config
 	fi
-	
-	### Optionally disable NUMA since >99% of users have mono-socket systems.
-	# For more, see: https://bugs.archlinux.org/task/31187
-	if [ -n "$_NUMAdisable" ]; then
-		if [ "${CARCH}" = "x86_64" ]; then
-			msg "Disabling NUMA from kernel config..."
-			sed -i -e 's/CONFIG_NUMA=y/# CONFIG_NUMA is not set/' \
-				-i -e '/CONFIG_AMD_NUMA=y/d' \
-				-i -e '/CONFIG_X86_64_ACPI_NUMA=y/d' \
-				-i -e '/CONFIG_NODES_SPAN_OTHER_NODES=y/d' \
-				-i -e '/# CONFIG_NUMA_EMU is not set/d' \
-				-i -e '/CONFIG_NODES_SHIFT=6/d' \
-				-i -e '/CONFIG_NEED_MULTIPLE_NODES=y/d' \
-				-i -e '/# CONFIG_MOVABLE_NODE is not set/d' \
-				-i -e '/CONFIG_USE_PERCPU_NUMA_NODE_ID=y/d' \
-				-i -e '/CONFIG_ACPI_NUMA=y/d' ./.config
-		fi
-	fi
+
+	### Optionally disable NUMA for 64-bit kernels only
+        # (x86 kernels do not support NUMA)
+        if [ -n "$_NUMAdisable" ]; then
+            msg "Disabling NUMA from kernel config..."
+            sed -i -e 's/CONFIG_NUMA=y/# CONFIG_NUMA is not set/' \
+                -i -e '/CONFIG_AMD_NUMA=y/d' \
+                -i -e '/CONFIG_X86_64_ACPI_NUMA=y/d' \
+                -i -e '/CONFIG_NODES_SPAN_OTHER_NODES=y/d' \
+                -i -e '/# CONFIG_NUMA_EMU is not set/d' \
+                -i -e '/CONFIG_NODES_SHIFT=6/d' \
+                -i -e '/CONFIG_NEED_MULTIPLE_NODES=y/d' \
+                -i -e '/# CONFIG_MOVABLE_NODE is not set/d' \
+                -i -e '/CONFIG_USE_PERCPU_NUMA_NODE_ID=y/d' \
+                -i -e '/CONFIG_ACPI_NUMA=y/d' ./.config
+        fi
 
 	### Set extraversion to pkgrel
 	sed -ri "s|^(EXTRAVERSION =).*|\1 -${pkgrel}|" Makefile
@@ -315,7 +310,7 @@ prepare() {
 	yes "" | make config >/dev/null
 
 	### Save configuration for later reuse
-	cat .config > "${startdir}/config.${CARCH}.last"
+	cat .config > "${startdir}/config.last"
 }
 
 build() {
@@ -325,7 +320,7 @@ build() {
 }
 
 _package-kernel() {
-    pkgdesc='Linux Kernel and modules with the  BFQ-SQ-MQ scheduler. Fourth Gen Intel Core i3/i5/i7 optimized.'
+    pkgdesc='Linux Kernel and modules with the  hup-bfq-mq scheduler. Fourth Gen Intel Core i3/i5/i7 optimized.'
     depends=('coreutils' 'linux-firmware' 'mkinitcpio>=0.7')
     optdepends=('crda: to set the correct wireless channels of your country' 'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig')
     groups=('linux-hup-bfq-mq-git')
@@ -334,59 +329,60 @@ _package-kernel() {
 
     cd ${_srcname}
 
-    KARCH=x86
+    # get kernel version
+    _kernver="$(make LOCALVERSION= kernelrelease)"
+    _basekernel=${_kernver%%-*}
+    _basekernel=${_basekernel%.*}
 
-   # get kernel version
-   _kernver="$(make LOCALVERSION= kernelrelease)"
-   _basekernel=${_kernver%%-*}
-   _basekernel=${_basekernel%.*}
+    mkdir -p "${pkgdir}"/{boot,usr/lib/modules}
+    make LOCALVERSION= INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
+    cp arch/x86/boot/bzImage "${pkgdir}/boot/vmlinuz-${pkgbase}"
 
-   mkdir -p "${pkgdir}"/{lib/modules,lib/firmware,boot}
-   make LOCALVERSION= INSTALL_MOD_PATH="${pkgdir}" modules_install
-   cp arch/$KARCH/boot/bzImage "${pkgdir}/boot/vmlinuz-${pkgbase}"
+    # make room for external modules
+    local _extramodules="extramodules-${_basekernel}${_kernelname:--ARCH}"
+    ln -s "../${_extramodules}" "${pkgdir}/usr/lib/modules/${_kernver}/extramodules"
 
-   # set correct depmod command for install
-   sed -e "s|%PKGBASE%|${pkgbase}|g;s|%KERNVER%|${_kernver}|g" \
-    "${startdir}/${install}" > "${startdir}/${install}.pkg"
-   true && install=${install}.pkg
+    # add real version for building modules and running depmod from hook
+    echo "${_kernver}" |
+        install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modules/${_extramodules}/version"
 
-   # install mkinitcpio preset file for kernel
-   sed "s|%PKGBASE%|${pkgbase}|g" ../linux.preset |
-    install -Dm644 /dev/stdin "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
+    # remove build and source links
+    rm "${pkgdir}"/usr/lib/modules/${_kernver}/{source,build}
 
-   # install pacman hook for initramfs regeneration
-   sed "s|%PKGBASE%|${pkgbase}|g" ../90-linux.hook |
-    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
+    # now we call depmod...
+    depmod -b "${pkgdir}/usr" -F System.map "${_kernver}"
 
-   # remove build and source links
-   rm "${pkgdir}"/lib/modules/${_kernver}/{source,build}
+    # add vmlinux
+    install -Dt "${pkgdir}/usr/lib/modules/${_kernver}/build" -m644 vmlinux
 
-   # remove the firmware
-   rm -r "${pkgdir}/lib/firmware"
+    # sed expression for following substitutions
+    local _subst="
+        s|%PKGBASE%|${pkgbase}|g
+        s|%KERNVER%|${_kernver}|g
+        s|%EXTRAMODULES%|${_extramodules}|g
+    "
 
-   # make room for external modules
-   ln -s "../extramodules-${_basekernel}${_kernelname:--ARCH}" "${pkgdir}/lib/modules/${_kernver}/extramodules"
+    # hack to allow specifying an initially nonexisting install file
+    sed "${_subst}" "${startdir}/${install}" > "${startdir}/${install}.pkg"
+    true && install=${install}.pkg
 
-   # add real version for building modules and running depmod from post_install/upgrade
-   echo "${_kernver}" |
-    install -Dm644 /dev/stdin "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}/version"
+    # install mkinitcpio preset file
+    sed "${_subst}" ../linux.preset |
+        install -Dm644 /dev/stdin "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
 
-   # Now we call depmod...
-   depmod -b "${pkgdir}" -F System.map "${_kernver}"
-
-   # move module tree /lib -> /usr/lib
-   mv -t "${pkgdir}/usr" "${pkgdir}/lib"
-
-  # add vmlinux
-  install -Dm644 vmlinux "${pkgdir}/usr/lib/modules/${_kernver}/build/vmlinux"
+    # install pacman hooks
+    sed "${_subst}" ../60-linux.hook |
+        install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/60-${pkgbase}.hook"
+    sed "${_subst}" ../90-linux.hook |
+        install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
+    sed "${_subst}" ../99-linux.hook |
+        install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/99-${pkgbase}.hook"    
 }
 
 _package-headers() {
     pkgdesc='Header files and scripts to build modules for linux-hup-bfq-mq-git. Fourth Gen Intel Core i3/i5/i7 optimized.'
     depends=('linux-hup-bfq-mq-git-kernel')
     groups=('linux-hup-bfq-mq-git')
-
-    install -dm755 "${pkgdir}/usr/lib/modules/${_kernver}"
 
     cd ${_srcname}
     local _builddir="${pkgdir}/usr/lib/modules/${_kernver}/build"
@@ -398,14 +394,10 @@ _package-headers() {
 
     cp -t "${_builddir}" -a include scripts
 
-    install -Dt "${_builddir}/arch/${KARCH}" -m644 arch/${KARCH}/Makefile
-    install -Dt "${_builddir}/arch/${KARCH}/kernel" -m644 arch/${KARCH}/kernel/asm-offsets.s
+    install -Dt "${_builddir}/arch/x86" -m644 arch/x86/Makefile
+    install -Dt "${_builddir}/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
 
-    if [[ ${CARCH} = i686 ]]; then
-    install -t "${_builddir}/arch/${KARCH}" -m644 arch/${KARCH}/Makefile_32.cpu
-    fi
-
-    cp -t "${_builddir}/arch/${KARCH}" -a arch/${KARCH}/include
+    cp -t "${_builddir}/arch/x86" -a arch/x86/include
 
     install -Dt "${_builddir}/drivers/md" -m644 drivers/md/*.h
     install -Dt "${_builddir}/net/mac80211" -m644 net/mac80211/*.h
@@ -414,7 +406,6 @@ _package-headers() {
     install -Dt "${_builddir}/drivers/media/dvb-core" -m644 drivers/media/dvb-core/*.h
 
     # http://bugs.archlinux.org/task/13146
-    install -Dt "${_builddir}/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/lgdt330x.h
     install -Dt "${_builddir}/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
 
     # http://bugs.archlinux.org/task/20402
@@ -429,16 +420,13 @@ _package-headers() {
     find . -name Kconfig\* -exec install -Dm644 {} "${_builddir}/{}" \;
 
     # add objtool for external module building and enabled VALIDATION_STACK option
-    if [[ -e tools/objtool/objtool ]]; then
     install -Dt "${_builddir}/tools/objtool" tools/objtool/objtool
-    fi
 
     # remove unneeded architectures
     local _arch
     for _arch in "${_builddir}"/arch/*/; do
-    if [[ ${_arch} != */${KARCH}/ ]]; then
-      rm -r "${_arch}"
-    fi
+        [[ ${_arch} == */x86/ ]] && continue
+        rm -r "${_arch}"
     done
 
     # remove files already in linux-hup-bfq-mq-git-docs package
@@ -450,14 +438,14 @@ _package-headers() {
     # strip scripts directory
     local _binary _strip
     while read -rd '' _binary; do
-    case "$(file -bi "${_binary}")" in
-      *application/x-sharedlib*)  _strip="${STRIP_SHARED}"   ;; # Libraries (.so)
-      *application/x-archive*)    _strip="${STRIP_STATIC}"   ;; # Libraries (.a)
-      *application/x-executable*) _strip="${STRIP_BINARIES}" ;; # Binaries
-      *) continue ;;
-    esac
-    /usr/bin/strip ${_strip} "${_binary}"
-   done < <(find "${_builddir}/scripts" -type f -perm -u+w -print0 2>/dev/null)
+        case "$(file -bi "${_binary}")" in
+        *application/x-sharedlib*)  _strip="${STRIP_SHARED}"   ;; # Libraries (.so)
+        *application/x-archive*)    _strip="${STRIP_STATIC}"   ;; # Libraries (.a)
+        *application/x-executable*) _strip="${STRIP_BINARIES}" ;; # Binaries
+        *) continue ;;
+        esac
+        /usr/bin/strip ${_strip} "${_binary}"
+    done < <(find "${_builddir}/scripts" -type f -perm -u+w -print0 2>/dev/null)
 }
 
 _package-docs() {
@@ -482,6 +470,7 @@ for _p in ${pkgname[@]}; do
     _package${_p#${pkgbase}}
   }"
 done
+
 sha512sums=('SKIP'
             '264efe19f7cfc27bc2fd2c59b361821ac89e5505e1a55ab23e8a1f93e7095c509cfb8cf6eb2079b8113b7bc3283b2bec5d6d3776a8afd2b258f3688edb1f0615'
             '11dd363137d680d1bde1e332c3829246773e49d5fd0d2ef4ab77723ca0d2ecb3ad80a77a08dca8c4ce817ff0f966709673453e754f15e3e1527f943725d547ff'
@@ -495,9 +484,9 @@ sha512sums=('SKIP'
             '0f96fa9ad784709973b32eea82075ceb3e9dc2482df6441a4607612806f069254e63508b1b562279622394e4a1fbebef1b87af8401c0b1210d5d0de9954245c8'
             'a1ccc22354a420467fb912f822585ed4573e68f4694f02ab83d7c8e352da88be495acb3cb4c451c27ca0cf0befe5925b8734d37205bb3dfdaf86d2dedef0798f'
             '5ca7ae20245a54caa71fb570d971d6872d4e888f35c6123b93fbca16baf9a0e2500d6ec931f3906e4faecaaca9cad0d593694d9cab617efd0cb7b5fc09c0fa48'
-            '8ba7074bfe6ce24eb0f7fd8c82568c7f44fd97e75eb0c90429f78752e31dc0df4a963dc97b6243b02c67cdc3e482846296e0baa975758f68fa01ed46d4e350b3'
+            'b48acc505fc5cb1d1918b856001e88ac4df5330cf1923ef7f2780d14a32324b970389d885b7a45993c128ad80d9ba349fe9aa177db85162bf689a99e143c1901'
             '7ad5be75ee422dda3b80edd2eb614d8a9181e2c8228cd68b3881e2fb95953bf2dea6cbe7900ce1013c9de89b2802574b7b24869fc5d7a95d3cc3112c4d27063a'
-            'd6faa67f3ef40052152254ae43fee031365d0b1524aa0718b659eb75afc21a3f79ea8d62d66ea311a800109bed545bc8f79e8752319cd378eef2cbd3a09aba22'
+            '4a8b324aee4cccf3a512ad04ce1a272d14e5b05c8de90feb82075f55ea3845948d817e1b0c6f298f5816834ddd3e5ce0a0e2619866289f3c1ab8fd2f35f04f44'
             '6346b66f54652256571ef65da8e46db49a95ac5978ecd57a507c6b2a28aee70bb3ff87045ac493f54257c9965da1046a28b72cb5abb0087204d257f14b91fd74'
             '2dc6b0ba8f7dbf19d2446c5c5f1823587de89f4e28e9595937dd51a87755099656f2acec50e3e2546ea633ad1bfd1c722e0c2b91eef1d609103d8abdc0a7cbaf'
             'd1eb35e93c317a5d0b764cf3a6c183f17f9fadd9a9295dc36f0b9482b89fa6f2aba2b3011b2f3166282a7e3b2ed10f68ec824cb647f2e119ce014d31ba987d8d'
