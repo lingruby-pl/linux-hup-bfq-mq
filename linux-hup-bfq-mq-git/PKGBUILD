@@ -54,7 +54,7 @@ _NUMAdisable=y
 # This PKGBUILD will call it directly to probe all the modules you have logged!
 #
 # More at this wiki page ---> https://wiki.archlinux.org/index.php/Modprobed_db
-_localmodcfg=y
+_localmodcfg=
 
 # Use the current kernel's .config file
 # Enabling this option will use the .config of the RUNNING kernel rather than
@@ -320,7 +320,7 @@ build() {
 }
 
 _package-kernel() {
-    pkgdesc='Linux Kernel and modules with the  hup-bfq-mq scheduler. Fourth Gen Intel Core i3/i5/i7 optimized.'
+    pkgdesc='Linux Kernel and modules with the  BFQ-SQ-MQ scheduler. Fourth Gen Intel Core i3/i5/i7 optimized.'
     depends=('coreutils' 'linux-firmware' 'mkinitcpio>=0.7')
     optdepends=('crda: to set the correct wireless channels of your country' 'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig')
     groups=('linux-hup-bfq-mq-git')
