@@ -80,7 +80,7 @@ _kyber_disable=y
 pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
-pkgver=4.14.0.gbebc6082da0a
+pkgver=4.14.2.0.gf9f0b03dedc1
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
@@ -107,16 +107,21 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         "${_lucjanpath}/0300-Disable-writeback-throttling.patch"
         "${_gcc_path}/${_gcc_patch}"
          # the main kernel config files
-        'config.x86_64'
+         # the main kernel config files
+        'config'
+         # pacman hook for depmod
+        '60-linux.hook'
          # pacman hook for initramfs regeneration
         '90-linux.hook'
+         # pacman hook for remove initramfs
+        '99-linux.hook'
          # standard config files for mkinitcpio ramdisk
         'linux.preset'
-
+        '0001-platform-x86-hp-wmi-Fix-tablet-mode-detection-for-co.patch'
 	### UKSM ###
         "https://raw.githubusercontent.com/dolohow/uksm/master/uksm-4.14.patch"
 	### VRQ ###
-        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.14_pds098f.patch"
+        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.14_pds098g.patch"
 	)
 
 _kernelname=${pkgbase#linux}
@@ -129,8 +134,17 @@ pkgver() {
 
 prepare() {
     cd "${_srcname}"
-   
+    
+    ### Fix https://bugs.archlinux.org/task/56207
+        msg "Fix bug #56207"
+        patch -Np1 -i ../0001-platform-x86-hp-wmi-Fix-tablet-mode-detection-for-co.patch
+       
     ### Patch source with BFQ-SQ-MQ
+        msg "Fix naming schema in BFQ-SQ-MQ patch"
+        sed -i -e "s|SUBLEVEL = 0|SUBLEVEL = 2|g" \
+            -i -e "s|EXTRAVERSION = -bfq|EXTRAVERSION =|g" \
+            -i -e "s|EXTRAVERSION =-mq|EXTRAVERSION =|g" \
+            -i -e "s|NAME = Fearless Coyote|NAME = Petit Gorille|g" ../${_bfq_sq_mq_patch}
         msg "Patching source with BFQ-SQ-MQ patches"
         patch -Np1 -i ../${_bfq_sq_mq_patch}
         
@@ -160,7 +174,7 @@ prepare() {
     ### UKSM ###
 	patch -Np1 -i "${srcdir}/uksm-4.14.patch"
     ### PSD ###
-	patch -Np1 -i "${srcdir}/v4.14_pds098f.patch"       
+	patch -Np1 -i "${srcdir}/v4.14_pds098g.patch"       
 
     ### Patch source to enable more gcc CPU optimizatons via the make nconfig
         msg "Patching source with gcc patch to enable more cpus types"
@@ -170,7 +184,7 @@ prepare() {
 	msg "Running make mrproper to clean source tree"
 	make mrproper
 
-	cp -Tf ../config.${CARCH} .config
+	cp -Tf ../config .config
         
     ### Optionally use running kernel's config
 	# code originally by nous; http://aur.archlinux.org/packages.php?ID=40191
@@ -481,8 +495,11 @@ sha512sums=('SKIP'
             '0f96fa9ad784709973b32eea82075ceb3e9dc2482df6441a4607612806f069254e63508b1b562279622394e4a1fbebef1b87af8401c0b1210d5d0de9954245c8'
             'a1ccc22354a420467fb912f822585ed4573e68f4694f02ab83d7c8e352da88be495acb3cb4c451c27ca0cf0befe5925b8734d37205bb3dfdaf86d2dedef0798f'
             '5ca7ae20245a54caa71fb570d971d6872d4e888f35c6123b93fbca16baf9a0e2500d6ec931f3906e4faecaaca9cad0d593694d9cab617efd0cb7b5fc09c0fa48'
-            '2e64667d3782e84d44f386c8b30163c9768446985eac94018961d92c5ae3fec21c9e0cffc91ac5a5a9a542ace4b68c025472b11fe141a366a90fc9f7ca97c93f'
+            '8ba7074bfe6ce24eb0f7fd8c82568c7f44fd97e75eb0c90429f78752e31dc0df4a963dc97b6243b02c67cdc3e482846296e0baa975758f68fa01ed46d4e350b3'
+            '7ad5be75ee422dda3b80edd2eb614d8a9181e2c8228cd68b3881e2fb95953bf2dea6cbe7900ce1013c9de89b2802574b7b24869fc5d7a95d3cc3112c4d27063a'
             'd6faa67f3ef40052152254ae43fee031365d0b1524aa0718b659eb75afc21a3f79ea8d62d66ea311a800109bed545bc8f79e8752319cd378eef2cbd3a09aba22'
+            '6346b66f54652256571ef65da8e46db49a95ac5978ecd57a507c6b2a28aee70bb3ff87045ac493f54257c9965da1046a28b72cb5abb0087204d257f14b91fd74'
             '2dc6b0ba8f7dbf19d2446c5c5f1823587de89f4e28e9595937dd51a87755099656f2acec50e3e2546ea633ad1bfd1c722e0c2b91eef1d609103d8abdc0a7cbaf'
+            'd1eb35e93c317a5d0b764cf3a6c183f17f9fadd9a9295dc36f0b9482b89fa6f2aba2b3011b2f3166282a7e3b2ed10f68ec824cb647f2e119ce014d31ba987d8d'
             '44b31276d4d712e4e1e1455e128daa079ddd9d72a4620289607faf6134a225737004e8742de79e0283e98ef2d4f746f075e041870d37eab191c93c566f945c7f'
-            '03b315f6e82e186c634c06cc90c152d1388fab22d3404247f08d3f5d2db32a405c59d4fa37f8b3c07afaf9595cd52569b6bd4815fedcf372a5de4e1a1e258818')
+            '6ed3f8800fbc975562d68563388695592e2c09348e0339a2a42cb508f3591051fa484b618b40b9b2c0aa2869e5ecb2d1042ff4ff419344ee6cd460a11cd5d04d')
