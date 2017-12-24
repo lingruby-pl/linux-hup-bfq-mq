@@ -77,14 +77,14 @@ _kyber_disable=y
 pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _srcname=linux-stable
-pkgver=4.14.7.0.g3afae8437c3c
+pkgver=4.14.8.0.g7b3775017f4e
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
 license=('GPL2')
 options=('!strip')
 makedepends=('kmod' 'inetutils' 'bc' 'libelf' 'git')
-_bfq_sq_mq_ver='20171211'
+_bfq_sq_mq_ver='20171222'
 _bfq_sq_mq_patch="4.14-bfq-sq-mq-git-${_bfq_sq_mq_ver}.patch"
 #_lucjanpath="https://raw.githubusercontent.com/sirlucjan/kernel-patches/master/4.14"
 _lucjanpath="https://gitlab.com/sirlucjan/kernel-patches/raw/master/4.14"
@@ -93,7 +93,6 @@ _gcc_patch="enable_additional_cpu_optimizations_for_gcc_v4.9+_kernel_v4.13+.patc
 
 source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#branch=linux-4.14.y'
         "${_lucjanpath}/${_bfq_sq_mq_patch}"
-        "${_lucjanpath}/blk-mq-v10/0050-blk-mq-sched-dispatch-from-scheduler-only-after-progress-is-made-on->dispatch.patch"
         "${_lucjanpath}/blk-mq-v10/0051-blk-mq-sched-move-actual-dispatching-into-one-helper.patch"
         "${_lucjanpath}/blk-mq-v10/0052-blk-mq-sbitmap-introduce__sbitmap_for_each_set().patch"
         "${_lucjanpath}/blk-mq-v10/0053-blk-mq-block-kyber-check-if-there-is-request-in-ctx-in-kyber_has_work().patch"
@@ -117,10 +116,10 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         '0001-add-sysctl-to-disallow-unprivileged-CLONE_NEWUSER-by.patch'
         '0001-e1000e-Fix-e1000_check_for_copper_link_ich8lan-retur.patch'
         '0002-dccp-CVE-2017-8824-use-after-free-in-DCCP-code.patch'
-       	### UKSM ###
+        ### UKSM ###
         "https://raw.githubusercontent.com/dolohow/uksm/master/uksm-4.14.patch"
 	### VRQ ###
-        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.14_pds098g.patch"
+        "https://bitbucket.org/alfredchen/linux-gc/downloads/v4.14_pds098h.patch"
 	)
 
 _kernelname=${pkgbase#linux}
@@ -149,7 +148,7 @@ prepare() {
     
     ### Patch source with BFQ-SQ-MQ
         msg "Fix naming schema in BFQ-SQ-MQ patch"
-        sed -i -e "s|SUBLEVEL = 0|SUBLEVEL = 7|g" \
+        sed -i -e "s|SUBLEVEL = 0|SUBLEVEL = 8|g" \
             -i -e "s|EXTRAVERSION = -bfq|EXTRAVERSION =|g" \
             -i -e "s|EXTRAVERSION =-mq|EXTRAVERSION =|g" \
             -i -e "s|NAME = Fearless Coyote|NAME = Petit Gorille|g" ../${_bfq_sq_mq_patch}
@@ -186,7 +185,7 @@ prepare() {
     ### UKSM ###
 	patch -Np1 -i "${srcdir}/uksm-4.14.patch"
     ### PSD ###
-	patch -Np1 -i "${srcdir}/v4.14_pds098g.patch"       
+	patch -Np1 -i "${srcdir}/v4.14_pds098h.patch"       
 
     ### Clean tree and copy ARCH config over
 	msg "Running make mrproper to clean source tree"
@@ -483,8 +482,7 @@ for _p in ${pkgname[@]}; do
 done
 
 sha512sums=('SKIP'
-            '2ae7dbddb05decc17731751bfd1c37308fa88d1acac6080561a3aec27fbe383d79ca91f611e81d8fadcde7507b1d4ed2ab1fbc5cad123a41806bbf2d43d13c52'
-            '11dd363137d680d1bde1e332c3829246773e49d5fd0d2ef4ab77723ca0d2ecb3ad80a77a08dca8c4ce817ff0f966709673453e754f15e3e1527f943725d547ff'
+            '0a55030c3638386fa0a5ebd7de91dab9665e528c159a6450c82e5143f7f91dbbdc89cf2dc3dfaddb10b1ba269c1a850aa0a2fcadd865ce4b270255d569d283a3'
             'ca6a40800668c0fcf478bd1bc555e5a496f5259739594bf83cc4963756b7a9a0a5b406e91f760d35f1bce1268c01d779fe2a7e749eccf9412e826152a5f013ef'
             '1434cc3957ef77fb83c9385a348f36ca43a73459b8995d3061143d1d15b307f944c39abc0eb109d20869c1749348d608c58cf5b92fd81ad65cad2d362e346549'
             '49c8619a96d7145e8fe77fad4394db7b24a73d94c1e01866e4a3bc5b044dbbb59c8aa2db62d72ef8460ec777d88959b545ad6373073fe3fd21016e5fc08c9f3c'
@@ -504,4 +502,4 @@ sha512sums=('SKIP'
             '4b461e3f194fd11ec4321cfbe63dbc5f59c2ed0ee71cae5753b64761c6cc816e28fe89f9c472f92a6cf22557ab88243c16f7f2d2e754ba0b47f82608dc9ddc25'
             '93131d8ad8b118a1c1bcabce357ba7e61233c99188f2d0123977c436e2932555bde4e19de4ca63ac27c6e9b26d8373fb99b52db18b7518122433616d7060082d'
             '44b31276d4d712e4e1e1455e128daa079ddd9d72a4620289607faf6134a225737004e8742de79e0283e98ef2d4f746f075e041870d37eab191c93c566f945c7f'
-            '6ed3f8800fbc975562d68563388695592e2c09348e0339a2a42cb508f3591051fa484b618b40b9b2c0aa2869e5ecb2d1042ff4ff419344ee6cd460a11cd5d04d')
+            '3c02b044aca10c00807188d37a7c75c61b8000e69c3127bb96ebdac58ca283390cce05d8e4f9dc15b95627b05090242175a29b4383f688bcf5e3e13065979805')
