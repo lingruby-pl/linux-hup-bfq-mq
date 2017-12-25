@@ -102,7 +102,6 @@ source=('git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git#b
         "${_lucjanpath}/blk-mq-v10/0057-blk-mq-SCSI-implement-get-budget-and-put_budget-for-blk-mq.patch"
         "${_lucjanpath}/0100-Check-presence-on-tree-of-every-entity-after-every-a.patch"
         "${_gcc_path}/${_gcc_patch}"
-        "${_gcc_path}/${_gcc_patch}"
          # the main kernel config files
         'config'
          # pacman hook for depmod
