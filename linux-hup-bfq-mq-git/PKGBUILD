@@ -75,7 +75,7 @@ pkgbase=linux-hup-bfq-mq-git
 # pkgname=('linux-hup-bfq-mq-git-kernel' 'linux-hup-bfq-mq-git-headers' 'linux-hup-bfq-mq-git-docs')
 _major=4.16
 _srcname=linux-stable
-pkgver=4.16.12.0.ge2a75b6d2e9d
+pkgver=4.16.13.0.gd19433b3d3b9
 pkgrel=1
 arch=('x86_64')
 url="https://github.com/Algodev-github/bfq-mq/"
@@ -494,7 +494,7 @@ sha512sums=('SKIP'
             'f8dd74ae67bf8c34d1fee2d4ddea52ffeb83f9fb66de0667a97f897f72ed0d00e916561bfa827c8611adbc7198cf2378c5bc4b6bbb19f91921eaef8a911da3a1'
             '8e0a77a02088c94f5c0ae01006f5b9a6f9921a8ed8c81e7a65b15fa49b6827f7f6b403ccf3c13fd083a71d9aeaa2e12a84b566a7dde526e9f5726813a01aafea'
             'SKIP'
-            '009449936dabe8995502d9f540f8177bc1ce513c1aa84568da0d14e2b2930265f53d298a0c1bf63979d6f2ef560add87e5adadd4dad08c8f8d4343879a03a464'
+            '3adfa3106c5dbe0cbf7bd91012ce7049d9df7e1961c99496fc8de768367c907e4b0c482933daa7a7e826188a684e37e76afeab8040df8a62464d0601a93aa062'
             '7ad5be75ee422dda3b80edd2eb614d8a9181e2c8228cd68b3881e2fb95953bf2dea6cbe7900ce1013c9de89b2802574b7b24869fc5d7a95d3cc3112c4d27063a'
             '4a8b324aee4cccf3a512ad04ce1a272d14e5b05c8de90feb82075f55ea3845948d817e1b0c6f298f5816834ddd3e5ce0a0e2619866289f3c1ab8fd2f35f04f44'
             '6346b66f54652256571ef65da8e46db49a95ac5978ecd57a507c6b2a28aee70bb3ff87045ac493f54257c9965da1046a28b72cb5abb0087204d257f14b91fd74'
